@@ -17,7 +17,7 @@ class Agent
 
   def initialize
     @age_range = random_range_within(18, 100)
-    @us_states_served = US_STATES.sample(1 + rand(US_STATES.length - 1))
+    @us_states_served = US_STATES.sample(rand(1..US_STATES.length))
     @num_kids_range = random_range_within(0, 6)
     @num_cars_range = random_range_within(0, 4)
     @residency_types_served = %w[renter owner].sample(rand(1..2))
