@@ -6,8 +6,6 @@ $LOAD_PATH.unshift('ruby')
 require 'call_router'
 
 RSpec.describe CallRouter do
-  subject { CallRouter.new([]) }
-
   describe '#calculate_match_score' do
     agent_props = {
       age_range: (20..40),
@@ -69,9 +67,10 @@ RSpec.describe CallRouter do
           expected_result: 0
         }
       ]
+      router = CallRouter.new
       test_cases.each do |testcase|
         consumer = instance_double('Consumer', testcase[:consumer_props])
-        expect(subject.calculate_match_score(agent, consumer)).to eq(
+        expect(router.calculate_match_score(agent, consumer)).to eq(
           testcase[:expected_result]
         )
       end
