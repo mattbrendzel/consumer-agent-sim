@@ -2,7 +2,7 @@
 # For Ruby 2.X:
 # frozen_string_literal: true
 
-require_relative 'us_states.rb'
+require_relative 'us_states'
 
 def random_range_within(min, max)
   range_start = min + rand(max - min)

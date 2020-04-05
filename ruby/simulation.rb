@@ -3,9 +3,10 @@
 # frozen_string_literal: true
 
 require 'pry'
-require_relative 'agent.rb'
-require_relative 'consumer.rb'
-require_relative 'call_router.rb'
+$LOAD_PATH.unshift('ruby')
+require 'agent'
+require 'consumer'
+require 'call_router'
 
 # Simulator : Manages the simulation at the top level
 class Simulator
