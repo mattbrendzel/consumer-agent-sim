@@ -36,5 +36,14 @@ class Consumer
     @income_in_thousands = rand(20..200)
     @phone_number = "+1#{self.class.next_phone_number.to_s.rjust(10, '0')}"
     self.class.increment_next_phone_number
+    @satisfied = false
+  end
+
+  def satisfied?
+    @satisfied
+  end
+
+  def satisfy
+    @satisfied = true
   end
 end
