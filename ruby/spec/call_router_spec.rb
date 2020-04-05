@@ -67,7 +67,7 @@ RSpec.describe CallRouter do
           expected_result: 0
         }
       ]
-      router = CallRouter.new
+      router = CallRouter.new([])
       test_cases.each do |testcase|
         consumer = instance_double('Consumer', testcase[:consumer_props])
         expect(router.calculate_match_score(agent, consumer)).to eq(
