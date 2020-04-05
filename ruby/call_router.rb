@@ -19,4 +19,19 @@ class CallRouter
     end.count(true)
     ranges_count + sets_count
   end
+
+  def get_best_matched_agent(consumer, agents)
+    best_score = 0
+    agents.reduce([]) do |best_matches, agent|
+      score = calculate_match_score(agent, consumer)
+      # If this score is a new high, throw out the old set of best agents
+      best_matches = [] if score > best_score
+      # If this score is no worse than the best score, add it to the collection
+      best_matches.push(agent) unless score < best_score
+      # Update best score
+      best_score = [score, best_score].max
+      # Return best matches
+      best_matches
+    end.sample # choose one of the set of best agents at random
+  end
 end
