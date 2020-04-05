@@ -23,6 +23,8 @@ class Consumer
   ## Instance level
   attr_reader :age, :us_state, :num_kids, :num_cars, :residency_type, :income
   attr_reader :phone_number
+  attr_accessor :busy
+  alias :busy? :busy
 
   def initialize
     # A Consumer has:
@@ -37,6 +39,7 @@ class Consumer
     @phone_number = "+1#{self.class.next_phone_number.to_s.rjust(10, '0')}"
     self.class.increment_next_phone_number
     @satisfied = false
+    @busy = false
   end
 
   def satisfied?
@@ -45,5 +48,6 @@ class Consumer
 
   def satisfy
     @satisfied = true
+    @busy = false
   end
 end
