@@ -40,5 +40,18 @@ class Agent
     # Give agents a unique identifier as well
     @agent_id = self.class.next_agent_id
     self.class.increment_next_agent_id
+    @busy = false
+  end
+
+  def busy?
+    @busy
+  end
+
+  private
+  def become_busy
+    @busy = true
+  end
+  def become_free
+    @busy = false
   end
 end
