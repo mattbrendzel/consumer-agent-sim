@@ -23,6 +23,5 @@ class Simulator
   end
 end
 
-simulator = Simulator.new
-simulator.set_start_conditions
+sim = Simulator.new
 binding.pry
