@@ -43,6 +43,7 @@ class Agent
     @agent_id = self.class.next_agent_id
     self.class.increment_next_agent_id
     @busy = false
+    @vm_queue = []
   end
 
   def busy?
@@ -50,7 +51,10 @@ class Agent
   end
 
   def handle_incoming_call(consumer)
-    if !busy?
+    if busy?
+      @vm_queue.push(consumer)
+      puts "Sent consumer to agent's voicemail"
+    else
       Thread.new { accept_call(consumer) }
       puts 'Inbound call accepted'
     end
