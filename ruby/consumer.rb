@@ -23,8 +23,6 @@ class Consumer
   ## Instance level
   attr_reader :age, :us_state, :num_kids, :num_cars, :residency_type, :income
   attr_reader :phone_number
-  attr_accessor :busy
-  alias :busy? :busy
 
   def initialize
     # A Consumer has:
@@ -46,8 +44,16 @@ class Consumer
     @satisfied
   end
 
-  def satisfy
+  def become_satisfied
     @satisfied = true
     @busy = false
+  end
+
+  def busy?
+    @busy
+  end
+
+  def become_busy
+    @busy = true
   end
 end

@@ -63,7 +63,7 @@ class Agent
   def satisfy(consumer)
     become_busy # Become busy while handling an incoming call
     sleep(AGENT_SLEEP_TIME)
-    consumer.satisfy
+    consumer.become_satisfied
     become_free # Become free once the consumer is satisfied
     puts 'Inbound call completed'
   end
