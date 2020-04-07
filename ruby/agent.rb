@@ -71,6 +71,24 @@ class Agent
     become_free # Become free once the consumer is satisfied
   end
 
+  def call_back(consumer)
+    if rand(10) < 8 # Calling back Consumers fails 80% of the time
+      # Assumption: Move this Consumer to the back of the voicemail queue
+      @vm_queue.rotate
+    else
+      call_back_successfully(consumer)
+    end
+  end
+
+  def call_back_successfully(consumer)
+    @vm_queue.shift # Remove this Consumer from the front of the queue
+    Thread.new do
+      satisfy(consumer)
+      puts 'Callback completed'
+    end
+    puts 'Callback started successfully'
+  end
+
   private
 
   def become_busy
