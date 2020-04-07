@@ -10,6 +10,8 @@ def random_range_within(min, max)
   (range_start..range_end)
 end
 
+AGENT_SLEEP_TIME = 10 # in seconds
+
 # Agent : Receives calls via CallRouter and initiates calls to Consumers
 class Agent
   attr_reader :age_range, :num_kids_range, :num_cars_range, :income_range
@@ -45,6 +47,21 @@ class Agent
 
   def busy?
     @busy
+  end
+
+  def handle_incoming_call(consumer)
+    if !busy?
+      Thread.new { accept_call(consumer) }
+      puts 'Inbound call accepted'
+    end
+  end
+
+  def accept_call(consumer)
+    become_busy # Become busy while handling an incoming call
+    sleep(AGENT_SLEEP_TIME)
+    consumer.satisfy
+    become_free # Become free once the consumer is satisfied
+    puts 'Inbound call completed'
   end
 
   private
