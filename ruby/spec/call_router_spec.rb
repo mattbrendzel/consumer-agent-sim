@@ -81,34 +81,78 @@ RSpec.describe CallRouter do
       Array.new(rand(1..5), AGENT_PROPS[:one]) +
       Array.new(rand(1..5), AGENT_PROPS[:two])
     )
-    context 'when no agents are available' do
-      context 'when there is a single best-matching agent' do
-        it 'returns the best-matched agent' do
-          consumer = instance_double('Consumer', CONSUMER_PROPS)
-          agents = agent_prop_array.map { |hsh| instance_double('Agent', hsh) }
-          best_matched_agent_mock = instance_double('Agent', AGENT_PROPS[:four])
-          agents.push(best_matched_agent_mock)
-          agents.shuffle!
+    context 'when there is a single best-matching agent' do
+      it 'returns the best-matched agent' do
+        consumer = instance_double('Consumer', CONSUMER_PROPS)
+        agents = agent_prop_array.map { |hsh| instance_double('Agent', hsh) }
+        best_matched_agent_mock = instance_double('Agent', AGENT_PROPS[:four])
+        agents.push(best_matched_agent_mock)
+        agents.shuffle!
 
-          expect(best_matched_agent_mock).to eq(
-            router.get_best_matched_agent(consumer, agents)
-          )
-        end
+        expect(best_matched_agent_mock).to eq(
+          router.get_best_matched_agent(consumer, agents)
+        )
       end
-      context 'when there are several agents tied for best-matched' do
-        it 'returns any one of the best-matched agents, at random' do
-          consumer = instance_double('Consumer', CONSUMER_PROPS)
-          agents = agent_prop_array.map { |hsh| instance_double('Agent', hsh) }
-          best_matched_agent_mocks = Array.new(2) do
-            instance_double('Agent', AGENT_PROPS[:four])
-          end
-          agents += best_matched_agent_mocks
-          agents.shuffle!
-
-          expect(best_matched_agent_mocks).to include(
-            router.get_best_matched_agent(consumer, agents)
-          )
+    end
+    context 'when there are several agents tied for best-matched' do
+      it 'returns any one of the best-matched agents, at random' do
+        consumer = instance_double('Consumer', CONSUMER_PROPS)
+        agents = agent_prop_array.map { |hsh| instance_double('Agent', hsh) }
+        best_matched_agent_mocks = Array.new(2) do
+          instance_double('Agent', AGENT_PROPS[:four])
         end
+        agents += best_matched_agent_mocks
+        agents.shuffle!
+
+        expect(best_matched_agent_mocks).to include(
+          router.get_best_matched_agent(consumer, agents)
+        )
+      end
+    end
+  end
+
+  describe '#best_agent_for' do
+    busy_agent_prop_array = (
+      Array.new(rand(1..5), AGENT_PROPS[:three]) +
+      Array.new(rand(1..5), AGENT_PROPS[:four]) +
+      Array.new(rand(1..5), AGENT_PROPS[:five]) +
+      # Best-matched busy agent
+      Array.new(1, AGENT_PROPS[:six].merge({ agent_id: 35 }))
+    )
+    free_agent_prop_array = (
+      Array.new(rand(1..5), AGENT_PROPS[:zero]) +
+      Array.new(rand(1..5), AGENT_PROPS[:one]) +
+      Array.new(rand(1..5), AGENT_PROPS[:two]) +
+      # Best-matched free agent
+      Array.new(1, AGENT_PROPS[:three].merge({ agent_id: 20 }))
+    )
+    context 'when no agents are free' do
+      it 'selects the best-matched busy agent' do
+        consumer = instance_double('Consumer', CONSUMER_PROPS)
+        busy_agents = busy_agent_prop_array.map do |hsh|
+          test_double = instance_double('Agent', hsh)
+          allow(test_double).to receive(:busy?).and_return(true)
+          test_double
+        end
+        router = CallRouter.new(busy_agents.shuffle)
+        expect(router.best_agent_for(consumer)).to eq(busy_agents.last)
+      end
+    end
+    context 'when any agents are free' do
+      it 'selects the best-matched free agent' do
+        consumer = instance_double('Consumer', CONSUMER_PROPS)
+        free_agents = free_agent_prop_array.map do |hsh|
+          test_double = instance_double('Agent', hsh)
+          allow(test_double).to receive(:busy?).and_return(false)
+          test_double
+        end
+        busy_agents = busy_agent_prop_array.map do |hsh|
+          test_double = instance_double('Agent', hsh)
+          allow(test_double).to receive(:busy?).and_return(true)
+          test_double
+        end
+        router = CallRouter.new((busy_agents + free_agents).shuffle)
+        expect(router.best_agent_for(consumer)).to eq(free_agents.last)
       end
     end
   end
