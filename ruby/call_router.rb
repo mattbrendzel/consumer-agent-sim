@@ -48,4 +48,8 @@ class CallRouter
     # Otherwise, return the best free agent
     get_best_matched_agent(consumer, agents[:free])
   end
+
+  def route_call(consumer)
+    best_agent_for(consumer).handle_incoming_call(consumer)
+  end
 end
