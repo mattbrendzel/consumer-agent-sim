@@ -5,216 +5,108 @@
 $LOAD_PATH.unshift('ruby')
 require 'call_router'
 
+CONSUMER_PROPS = {
+  age: 45,
+  num_kids: 2,
+  num_cars: 2,
+  income: 100,
+  us_state: 'NJ',
+  residency_type: 'owner'
+}.freeze
+# Matching and non-matching values for ranges/lists
+AGE_RANGES = { matching: (20..50), nonmatching: (60..80) }.freeze
+NUM_KIDS_RANGES = { matching: (1..3), nonmatching: (0..1) }.freeze
+NUM_CARS_RANGES = { matching: (1..2), nonmatching: (0..1) }.freeze
+INCOME_RANGES = { matching: (80..120), nonmatching: (0..1) }.freeze
+STATE_LISTS = { matching: %w[NJ NY PA MA MD], nonmatching: %w[CA OR WA] }.freeze
+RESIDENCY_TYPE_LISTS = {
+  matching: %w[owner renter], nonmatching: ['renter']
+}.freeze
+
+agent_props = {} # key = # of matching attributes
+agent_props[:zero] = {
+  age_range: AGE_RANGES[:nonmatching],
+  num_kids_range: NUM_KIDS_RANGES[:nonmatching],
+  num_cars_range: NUM_CARS_RANGES[:nonmatching],
+  income_range: INCOME_RANGES[:nonmatching],
+  us_states_served: STATE_LISTS[:nonmatching],
+  residency_types_served: RESIDENCY_TYPE_LISTS[:nonmatching]
+}
+agent_props[:one] = agent_props[:zero].merge(
+  { age_range: AGE_RANGES[:matching] }
+)
+agent_props[:two] = agent_props[:one].merge(
+  { num_kids_range: NUM_KIDS_RANGES[:matching] }
+)
+agent_props[:three] = agent_props[:two].merge(
+  { num_cars_range: NUM_CARS_RANGES[:matching] }
+)
+agent_props[:four] = agent_props[:three].merge(
+  { income_range: INCOME_RANGES[:matching] }
+)
+agent_props[:five] = agent_props[:four].merge(
+  { us_states_served: STATE_LISTS[:matching] }
+)
+agent_props[:six] = agent_props[:five].merge(
+  { residency_types_served: RESIDENCY_TYPE_LISTS[:matching] }
+)
+AGENT_PROPS = agent_props.freeze
+
 RSpec.describe CallRouter do
   describe '#calculate_match_score' do
-    agent_props = {
-      age_range: (20..40),
-      num_kids_range: (0..2),
-      num_cars_range: (1..2),
-      income_range: (60..80),
-      us_states_served: %w[CT MA ME NH NJ NY ME RI VT],
-      residency_types_served: ['renter']
-    }
+    router = CallRouter.new([])
     it 'takes an agent and a consumer, and sums the criteria that match' do
-      agent = instance_double('Agent', agent_props)
-      perfect_match_props = {
-        age: 30, num_kids: 0, num_cars: 1, income: 60, us_state: 'NY',
-        residency_type: 'renter'
-      }
-      test_cases = [
-        {
-          consumer_props: perfect_match_props,
-          expected_result: 6
-        },
-        {
-          consumer_props: perfect_match_props.merge({ us_state: 'VA' }),
-          expected_result: 5
-        },
-        {
-          consumer_props: perfect_match_props.merge(
-            { income: 40, us_state: 'VA' }
-          ),
-          expected_result: 4
-        },
-        {
-          consumer_props: perfect_match_props.merge(
-            { num_kids: 5, income: 40, us_state: 'VA' }
-          ),
-          expected_result: 3
-        },
-        {
-          consumer_props: perfect_match_props.merge(
-            { num_kids: 5, num_cars: 0, income: 40, us_state: 'VA' }
-          ),
-          expected_result: 2
-        },
-        {
-          consumer_props: perfect_match_props.merge(
-            {
-              residency_type: 'owner', num_kids: 5, num_cars: 0, income: 40,
-              us_state: 'VA'
-            }
-          ),
-          expected_result: 1
-        },
-        {
-          consumer_props: perfect_match_props.merge(
-            {
-              age: 70, residency_type: 'owner', num_kids: 5, num_cars: 0,
-              income: 40, us_state: 'VA'
-            }
-          ),
-          expected_result: 0
-        }
-      ]
-      router = CallRouter.new([])
-      test_cases.each do |testcase|
-        consumer = instance_double('Consumer', testcase[:consumer_props])
-        expect(router.calculate_match_score(agent, consumer)).to eq(
-          testcase[:expected_result]
+      consumer = instance_double('Consumer', CONSUMER_PROPS)
+      [
+        { agent_props: AGENT_PROPS[:zero], expected_result: 0 },
+        { agent_props: AGENT_PROPS[:one], expected_result: 1 },
+        { agent_props: AGENT_PROPS[:two], expected_result: 2 },
+        { agent_props: AGENT_PROPS[:three], expected_result: 3 },
+        { agent_props: AGENT_PROPS[:four], expected_result: 4 },
+        { agent_props: AGENT_PROPS[:five], expected_result: 5 },
+        { agent_props: AGENT_PROPS[:six], expected_result: 6 }
+      ].each do |testcase|
+        agent = instance_double('Agent', testcase[:agent_props])
+        expect(testcase[:expected_result]).to eq(
+          router.calculate_match_score(agent, consumer)
         )
       end
     end
   end
 
   describe '#get_best_matched_agent' do
-    consumer_props = {
-      age: 45,
-      num_kids: 2,
-      num_cars: 2,
-      income: 100,
-      us_state: 'NJ',
-      residency_type: 'owner'
-    }
     router = CallRouter.new([])
-    context 'when all agents are available' do
-      agent_props_with_match_score_zero = [
-        {
-          agent_id: 0,
-          age_range: (20..40),
-          num_kids_range: (0..1),
-          num_cars_range: (0..1),
-          income_range: (50..90),
-          us_states_served: %w[NY PA MA MD],
-          residency_types_served: ['renter']
-        },
-        {
-          agent_id: 1,
-          age_range: (60..90),
-          num_kids_range: (3..5),
-          num_cars_range: (0..1),
-          income_range: (150..190),
-          us_states_served: %w[KY WA OR CA],
-          residency_types_served: ['renter']
-        },
-        {
-          agent_id: 3,
-          age_range: (50..70),
-          num_kids_range: (0..1),
-          num_cars_range: (0..1),
-          income_range: (70..90),
-          us_states_served: %w[GA SC NC],
-          residency_types_served: ['renter']
-        }
-      ]
-      agent_props_with_match_score_one = [
-        {
-          agent_id: 4,
-          age_range: (20..50),
-          num_kids_range: (0..1),
-          num_cars_range: (0..1),
-          income_range: (50..90),
-          us_states_served: %w[NY PA MA MD],
-          residency_types_served: ['renter']
-        },
-        {
-          agent_id: 5,
-          age_range: (40..90),
-          num_kids_range: (3..5),
-          num_cars_range: (0..1),
-          income_range: (150..190),
-          us_states_served: %w[KY WA OR CA],
-          residency_types_served: ['renter']
-        },
-        {
-          agent_id: 6,
-          age_range: (40..70),
-          num_kids_range: (0..1),
-          num_cars_range: (0..1),
-          income_range: (70..90),
-          us_states_served: %w[GA SC NC],
-          residency_types_served: ['renter']
-        }
-      ]
-      agent_props_with_match_score_three = [
-        {
-          agent_id: 7,
-          age_range: (20..50),
-          num_kids_range: (0..1),
-          num_cars_range: (0..1),
-          income_range: (50..90),
-          us_states_served: %w[NJ NY PA MA MD],
-          residency_types_served: %w[owner renter]
-        },
-        {
-          agent_id: 8,
-          age_range: (40..90),
-          num_kids_range: (3..5),
-          num_cars_range: (0..1),
-          income_range: (150..190),
-          us_states_served: %w[NJ KY WA OR CA],
-          residency_types_served: %w[owner renter]
-        },
-        {
-          agent_id: 9,
-          age_range: (40..70),
-          num_kids_range: (0..1),
-          num_cars_range: (0..1),
-          income_range: (70..90),
-          us_states_served: %w[NJ GA SC NC],
-          residency_types_served: %w[owner renter]
-        }
-      ]
-
+    agent_prop_array = (
+      Array.new(rand(1..5), AGENT_PROPS[:zero]) +
+      Array.new(rand(1..5), AGENT_PROPS[:one]) +
+      Array.new(rand(1..5), AGENT_PROPS[:two])
+    )
+    context 'when no agents are available' do
       context 'when there is a single best-matching agent' do
-        best_matched_agent_id = 23
-        best_matched_agent_props = { # Matches 5/6
-          agent_id: best_matched_agent_id,
-          age_range: (30..50),
-          num_kids_range: (0..2),
-          num_cars_range: (0..2),
-          income_range: (50..90),
-          us_states_served: %w[NJ NY PA MA MD],
-          residency_types_served: %w[owner renter]
-        }
         it 'returns the best-matched agent' do
-          agents = (
-            agent_props_with_match_score_zero +
-            agent_props_with_match_score_one +
-            agent_props_with_match_score_three +
-            [best_matched_agent_props]
-          ).map { |prop_hash| instance_double('Agent', prop_hash) }.shuffle
-          consumer = instance_double('Consumer', consumer_props)
+          consumer = instance_double('Consumer', CONSUMER_PROPS)
+          agents = agent_prop_array.map { |hsh| instance_double('Agent', hsh) }
+          best_matched_agent_mock = instance_double('Agent', AGENT_PROPS[:four])
+          agents.push(best_matched_agent_mock)
+          agents.shuffle!
 
-          expect(best_matched_agent_id).to eq(
-            router.get_best_matched_agent(consumer, agents).agent_id
+          expect(best_matched_agent_mock).to eq(
+            router.get_best_matched_agent(consumer, agents)
           )
         end
       end
       context 'when there are several agents tied for best-matched' do
         it 'returns any one of the best-matched agents, at random' do
-          best_matched_agent_ids = agent_props_with_match_score_three.map do |h|
-            h[:agent_id]
+          consumer = instance_double('Consumer', CONSUMER_PROPS)
+          agents = agent_prop_array.map { |hsh| instance_double('Agent', hsh) }
+          best_matched_agent_mocks = Array.new(2) do
+            instance_double('Agent', AGENT_PROPS[:four])
           end
-          agents = (
-            agent_props_with_match_score_zero +
-            agent_props_with_match_score_one +
-            agent_props_with_match_score_three
-          ).map { |prop_hash| instance_double('Agent', prop_hash) }.shuffle
-          consumer = instance_double('Consumer', consumer_props)
+          agents += best_matched_agent_mocks
+          agents.shuffle!
 
-          expect(best_matched_agent_ids).to include(
-            router.get_best_matched_agent(consumer, agents).agent_id
+          expect(best_matched_agent_mocks).to include(
+            router.get_best_matched_agent(consumer, agents)
           )
         end
       end
