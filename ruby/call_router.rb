@@ -34,4 +34,18 @@ class CallRouter
       best_matches
     end.sample # choose one of the set of best agents at random
   end
+
+  def best_agent_for(consumer)
+    agents = { free: [], busy: [] }
+    @agents.each do |agent|
+      (agent.busy? ? agents[:busy] : agents[:free]).push(agent)
+    end
+    # If no agents are free, return the best busy agent.
+    if agents[:free].empty?
+      return get_best_matched_agent(consumer, agents[:busy])
+    end
+
+    # Otherwise, return the best free agent
+    get_best_matched_agent(consumer, agents[:free])
+  end
 end
