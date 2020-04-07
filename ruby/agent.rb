@@ -55,17 +55,20 @@ class Agent
       @vm_queue.push(consumer)
       puts "Sent consumer to agent's voicemail"
     else
-      Thread.new { satisfy(consumer) }
+      Thread.new do
+        satisfy(consumer)
+        puts 'Inbound call completed'
+      end
       puts 'Inbound call accepted'
     end
   end
 
   def satisfy(consumer)
     become_busy # Become busy while handling an incoming call
+    consumer.become_busy
     sleep(AGENT_SLEEP_TIME)
     consumer.become_satisfied
     become_free # Become free once the consumer is satisfied
-    puts 'Inbound call completed'
   end
 
   private
