@@ -11,8 +11,8 @@ class Consumer < Person
   attr_reader :age, :us_state, :num_kids, :num_cars, :residency_type, :income
   attr_reader :phone_number
 
-  def initialize
-    super
+  def initialize(call_router)
+    super()
     # A Consumer has:
     #   age, state of residency, # of kids, # of cars, residency type (rent/own)
     #   income, and phone number (unique)
@@ -24,11 +24,12 @@ class Consumer < Person
     @income_in_thousands = rand(20..200)
     @satisfied = false
     @phone_number = "+1#{@unique_id.to_s.rjust(10, '0')}"
+    @call_router = call_router
   end
 
   def act
-    unless busy?
-      puts "Make a call"
+    unless busy? # Unless currently on a call with an agent
+      @call_router.route_call(self)
       # "Put random sleeps between calls" (up to 30 s now, up to 30 ms later)
       sleep(rand(30))
     end

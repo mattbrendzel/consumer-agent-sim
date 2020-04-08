@@ -17,9 +17,9 @@ class Simulator
   end
 
   def set_start_conditions
-    @consumers = Array.new(5) { Consumer.new }
     @agents = Array.new(2) { Agent.new }
     @call_router = CallRouter.new(@agents)
+    @consumers = Array.new(5) { Consumer.new(@call_router) }
   end
 end
 
