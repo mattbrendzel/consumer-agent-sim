@@ -27,6 +27,24 @@ class Person
     @busy = false
     @unique_id = self.class.next_unique_id
     self.class.increment_next_unique_id
+    @is_running = false
+  end
+
+  def running?
+    @is_running
+  end
+
+  def act; end
+
+  def start
+    @is_running = true
+    puts 'Starting thread'
+    @action_thread = Thread.new { act while @is_running } # Launch thread
+  end
+
+  def stop
+    @is_running = false
+    puts 'Thread stopped'
   end
 
   def busy?
