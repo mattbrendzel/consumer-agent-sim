@@ -42,6 +42,7 @@ class Consumer < Person
   def become_satisfied
     @satisfied = true
     @busy = false
+    stop # Stop taking any further action
   end
 
   def become_busy # Make this method public for Consumers
