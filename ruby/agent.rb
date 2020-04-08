@@ -53,9 +53,9 @@ class Agent < Person
 
   def satisfy(consumer)
     sleep(rand(5..30)) # Sleep 5-30 s (eventually, 5-30 ms)
+    puts "Agent #{agent_id} handled #{consumer.phone_number}"
     consumer.become_satisfied
     become_free # Become free once the consumer is satisfied
-    puts "Agent #{agent_id} handled #{consumer.phone_number}"
   end
 
   def call_back(consumer)
