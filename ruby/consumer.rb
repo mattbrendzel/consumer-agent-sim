@@ -13,9 +13,6 @@ class Consumer < Person
 
   def initialize(simulator_instance)
     super()
-    # A Consumer has:
-    #   age, state of residency, # of kids, # of cars, residency type (rent/own)
-    #   income, and phone number (unique)
     @age = rand(18..100)
     @us_state = US_STATES.sample
     @num_kids = rand(6)
@@ -29,10 +26,11 @@ class Consumer < Person
   end
 
   def act
-    unless busy? # Unless currently on hold or in a call with an agent
-      become_busy # Begin call
-      @simulator.call_router.route_call(self)
-    end
+    # Only make a new inbound call if not currently busy with an existing call
+    return if busy?
+
+    become_busy # Begin call
+    @simulator.call_router.route_call(self)
   end
 
   def wait_and_retry

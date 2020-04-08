@@ -46,9 +46,7 @@ class Agent < Person
     else
       become_busy
       @utilization_counts[:calls_accepted] += 1
-      Thread.new do
-        satisfy(consumer)
-      end
+      Thread.new { satisfy(consumer) }
       puts "Agent #{agent_id} accepted call from #{consumer.phone_number}"
     end
   end
@@ -74,9 +72,7 @@ class Agent < Person
   def call_back_successfully(consumer)
     become_busy
     @vm_queue.shift # Remove this Consumer from the front of the queue
-    Thread.new do
-      satisfy(consumer)
-    end
+    Thread.new { satisfy(consumer) }
     puts "Agent #{agent_id} initiated callback with #{consumer.phone_number}"
   end
 end
