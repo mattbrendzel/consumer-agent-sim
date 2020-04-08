@@ -71,8 +71,17 @@ class Agent < Person
 
   def call_back_successfully(consumer)
     become_busy
-    @vm_queue.shift # Remove this Consumer from the front of the queue
-    Thread.new { satisfy(consumer) }
     puts "Agent #{agent_id} initiated callback with #{consumer.phone_number}"
+    @vm_queue.shift # Remove this Consumer from the front of the queue
+
+    # If the agent is able to successfully call back a consumer, but that
+    # Consumer has already been satisfied by another agent, immediately
+    # terminate the call.
+    if consumer.satisfied?
+      puts "#{consumer.phone_number} already satisfied"
+      become_free
+    else
+      Thread.new { satisfy(consumer) }
+    end
   end
 end
