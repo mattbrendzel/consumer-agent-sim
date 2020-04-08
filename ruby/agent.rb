@@ -42,7 +42,9 @@ class Agent < Person
       @utilization_counts[:vms_received] += 1
       @vm_queue.push(consumer)
       puts "Sent #{consumer.phone_number} to voicemail of Agent #{agent_id}"
+      consumer.wait_and_retry
     else
+      become_busy
       @utilization_counts[:calls_accepted] += 1
       Thread.new do
         satisfy(consumer)
@@ -52,8 +54,6 @@ class Agent < Person
   end
 
   def satisfy(consumer)
-    become_busy # Become busy while handling an incoming call
-    consumer.become_busy
     sleep(rand(5..30)) # Sleep 5-30 s (eventually, 5-30 ms)
     consumer.become_satisfied
     become_free # Become free once the consumer is satisfied
@@ -72,6 +72,7 @@ class Agent < Person
   end
 
   def call_back_successfully(consumer)
+    become_busy
     @vm_queue.shift # Remove this Consumer from the front of the queue
     Thread.new do
       satisfy(consumer)

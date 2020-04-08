@@ -29,11 +29,17 @@ class Consumer < Person
   end
 
   def act
-    unless busy? # Unless currently on a call with an agent
+    unless busy? # Unless currently on hold or in a call with an agent
+      become_busy # Begin call
       @simulator.call_router.route_call(self)
-      # "Put random sleeps between calls" (up to 30 s now, up to 30 ms later)
-      sleep(rand(30))
     end
+  end
+
+  def wait_and_retry
+    # "Put random sleeps between calls" (up to 30 s now, up to 30 ms later)
+    sleep(rand(30))
+    # Become free in order to start making a new call
+    become_free
   end
 
   def satisfied?
@@ -41,17 +47,14 @@ class Consumer < Person
   end
 
   def become_satisfied
-    @satisfied = true
-    @busy = false
     stop # Stop taking any further action
+    # Update internal state
+    @satisfied = true
+    become_free
     # Tell the Simulator instance to update its count of satisfied Consumers.
     # This will consume fewer resources than having the Simulator continually
     # poll all of the Consumers.
     @simulator.update_satisfied_count
-  end
-
-  def become_busy # Make this method public for Consumers
-    @busy = true
   end
 
   def record_callback_attempt
