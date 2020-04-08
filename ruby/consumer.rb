@@ -26,6 +26,14 @@ class Consumer < Person
     @phone_number = "+1#{@unique_id.to_s.rjust(10, '0')}"
   end
 
+  def act
+    unless busy?
+      puts "Make a call"
+      # "Put random sleeps between calls" (up to 30 s now, up to 30 ms later)
+      sleep(rand(30))
+    end
+  end
+
   def satisfied?
     @satisfied
   end
