@@ -16,6 +16,7 @@ end
 class Agent < Person
   attr_reader :age_range, :num_kids_range, :num_cars_range, :income_range
   attr_reader :us_states_served, :residency_types_served # Sets, not ranges
+  attr_reader :utilization_counts
   alias :agent_id unique_id
 
   def initialize
