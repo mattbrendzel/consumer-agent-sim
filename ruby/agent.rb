@@ -27,6 +27,7 @@ class Agent < Person
     @residency_types_served = %w[renter owner].sample(rand(1..2))
     @income_range = random_range_within(20, 200)
     @vm_queue = []
+    @utilization_counts = { calls_accepted: 0, vms_received: 0 }
   end
 
   def act
@@ -37,9 +38,11 @@ class Agent < Person
 
   def handle_incoming_call(consumer)
     if busy?
+      @utilization_counts[:vms_received] += 1
       @vm_queue.push(consumer)
       puts "Sent consumer to agent's voicemail"
     else
+      @utilization_counts[:calls_accepted] += 1
       Thread.new do
         satisfy(consumer)
         puts 'Inbound call completed'
