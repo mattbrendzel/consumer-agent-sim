@@ -56,6 +56,6 @@ class Person
   end
 
   def become_free
-    @busy
+    @busy = false
   end
 end
