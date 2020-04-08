@@ -27,12 +27,13 @@ class Simulator
     puts 'Simulation starting...'
     @agents.each(&:start)
     @consumers.each(&:start)
-    nil
+    @start_time = Time.now
   end
 
   def stop
     @consumers.each(&:stop)
     @agents.each(&:stop)
+    @stop_time = Time.now
     sleep(5)
     puts 'Simulation stopped'
   end
