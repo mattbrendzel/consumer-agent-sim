@@ -25,6 +25,16 @@ class Consumer < Person
     @callback_attempts = 0
   end
 
+  def start
+    Thread.new do
+      # Put in an initial random delay before starting to run
+      become_busy
+      wait_and_retry
+      super
+      puts "#{phone_number} begins calling..."
+    end
+  end
+
   def act
     # Only make a new inbound call if not currently busy with an existing call
     return if busy?
