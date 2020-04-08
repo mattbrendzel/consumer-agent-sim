@@ -41,14 +41,13 @@ class Agent < Person
     if busy?
       @utilization_counts[:vms_received] += 1
       @vm_queue.push(consumer)
-      puts "Sent consumer to agent's voicemail"
+      puts "Sent #{consumer.phone_number} to voicemail of Agent #{agent_id}"
     else
       @utilization_counts[:calls_accepted] += 1
       Thread.new do
         satisfy(consumer)
-        puts 'Inbound call completed'
       end
-      puts 'Inbound call accepted'
+      puts "Agent #{agent_id} accepted call from #{consumer.phone_number}"
     end
   end
 
@@ -58,9 +57,11 @@ class Agent < Person
     sleep(rand(5..30)) # Sleep 5-30 s (eventually, 5-30 ms)
     consumer.become_satisfied
     become_free # Become free once the consumer is satisfied
+    puts "Agent #{agent_id} handled #{consumer.phone_number}"
   end
 
   def call_back(consumer)
+    puts "Agent #{agent_id} calling back #{consumer.phone_number}..."
     consumer.record_callback_attempt
     if rand(10) < 8 # Calling back Consumers fails 80% of the time
       # Assumption: Move this Consumer to the back of the voicemail queue
@@ -74,8 +75,7 @@ class Agent < Person
     @vm_queue.shift # Remove this Consumer from the front of the queue
     Thread.new do
       satisfy(consumer)
-      puts 'Callback completed'
     end
-    puts 'Callback started successfully'
+    puts "Agent #{agent_id} initiated callback with #{consumer.phone_number}"
   end
 end

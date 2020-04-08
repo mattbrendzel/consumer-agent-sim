@@ -24,13 +24,17 @@ class Simulator
   end
 
   def start
+    puts 'Simulation starting...'
     @agents.each(&:start)
     @consumers.each(&:start)
+    nil
   end
 
   def stop
     @consumers.each(&:stop)
     @agents.each(&:stop)
+    sleep(5)
+    puts 'Simulation stopped'
   end
 
   def update_satisfied_count

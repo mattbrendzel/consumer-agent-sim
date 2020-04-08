@@ -50,6 +50,8 @@ class CallRouter
   end
 
   def route_call(consumer)
-    best_agent_for(consumer).handle_incoming_call(consumer)
+    best_agent = best_agent_for(consumer)
+    puts "Routing #{consumer.phone_number} to Agent #{best_agent.agent_id}"
+    best_agent.handle_incoming_call(consumer)
   end
 end

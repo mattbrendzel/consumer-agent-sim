@@ -38,13 +38,11 @@ class Person
 
   def start
     @is_running = true
-    puts 'Starting thread'
     @action_thread = Thread.new { act while @is_running } # Launch thread
   end
 
   def stop
     @is_running = false
-    puts 'Thread stopped'
   end
 
   def busy?
