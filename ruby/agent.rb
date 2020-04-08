@@ -12,8 +12,6 @@ def random_range_within(min, max)
   (range_start..range_end)
 end
 
-AGENT_SLEEP_TIME = 10 # in seconds
-
 # Agent : Receives calls via CallRouter and initiates calls to Consumers
 class Agent < Person
   attr_reader :age_range, :num_kids_range, :num_cars_range, :income_range
@@ -29,6 +27,12 @@ class Agent < Person
     @residency_types_served = %w[renter owner].sample(rand(1..2))
     @income_range = random_range_within(20, 200)
     @vm_queue = []
+  end
+
+  def act
+    # When not already on a call, if the VM queue is not empty, call the first
+    # Consumer in the queue back.
+    call_back(@vm_queue.first) unless busy? || @vm_queue.empty?
   end
 
   def handle_incoming_call(consumer)
@@ -47,7 +51,7 @@ class Agent < Person
   def satisfy(consumer)
     become_busy # Become busy while handling an incoming call
     consumer.become_busy
-    sleep(AGENT_SLEEP_TIME)
+    sleep(rand(5..30)) # Sleep 5-30 s (eventually, 5-30 ms)
     consumer.become_satisfied
     become_free # Become free once the consumer is satisfied
   end
