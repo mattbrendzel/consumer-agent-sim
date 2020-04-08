@@ -60,6 +60,7 @@ class Agent < Person
   end
 
   def call_back(consumer)
+    consumer.record_callback_attempt
     if rand(10) < 8 # Calling back Consumers fails 80% of the time
       # Assumption: Move this Consumer to the back of the voicemail queue
       @vm_queue.rotate

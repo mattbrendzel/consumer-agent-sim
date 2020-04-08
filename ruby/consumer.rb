@@ -9,7 +9,7 @@ require 'person'
 # Consumer : Initiates calls to CallRouter
 class Consumer < Person
   attr_reader :age, :us_state, :num_kids, :num_cars, :residency_type, :income
-  attr_reader :phone_number
+  attr_reader :phone_number, :callback_attempts
 
   def initialize(simulator_instance)
     super()
@@ -25,6 +25,7 @@ class Consumer < Person
     @satisfied = false
     @phone_number = "+1#{@unique_id.to_s.rjust(10, '0')}"
     @simulator = simulator_instance
+    @callback_attempts = 0
   end
 
   def act
@@ -51,5 +52,9 @@ class Consumer < Person
 
   def become_busy # Make this method public for Consumers
     @busy = true
+  end
+
+  def record_callback_attempt
+    @callback_attempts += 1
   end
 end
