@@ -43,6 +43,10 @@ class Consumer < Person
     @satisfied = true
     @busy = false
     stop # Stop taking any further action
+    # Tell the Simulator instance to update its count of satisfied Consumers.
+    # This will consume fewer resources than having the Simulator continually
+    # poll all of the Consumers.
+    @simulator.update_satisfied_count
   end
 
   def become_busy # Make this method public for Consumers

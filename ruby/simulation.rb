@@ -20,6 +20,7 @@ class Simulator
     @agents = Array.new(2) { Agent.new }
     @call_router = CallRouter.new(@agents)
     @consumers = Array.new(5) { Consumer.new(self) }
+    @satisfied_consumer_count = 0
   end
 
   def start
@@ -30,6 +31,11 @@ class Simulator
   def stop
     @consumers.each(&:stop)
     @agents.each(&:stop)
+  end
+
+  def update_satisfied_count
+    @satisfied_consumer_count += 1
+    stop if @satisfied_consumer_count == @consumers.length
   end
 end
 
