@@ -21,6 +21,16 @@ class Simulator
     @call_router = CallRouter.new(@agents)
     @consumers = Array.new(5) { Consumer.new(self) }
   end
+
+  def start
+    @agents.each(&:start)
+    @consumers.each(&:start)
+  end
+
+  def stop
+    @consumers.each(&:stop)
+    @agents.each(&:stop)
+  end
 end
 
 sim = Simulator.new
