@@ -44,6 +44,12 @@ module ExportCsv
     ]
   end
 
+  CONSUMER_STATS_HEADERS = ['phone number', '# of callback attempts'].freeze
+
+  AGENT_STATS_HEADERS = [
+    'agent id', '# of calls accepted', '# of voicemails received'
+  ].freeze
+
   def CsvBuilder.create_csv_file(filename, headers)
     export_path = "./ruby/output/#{filename}.csv"
     CSV.open(export_path, 'wb', write_headers: true, headers: headers) do |csv|
@@ -57,6 +63,24 @@ module ExportCsv
     end
     CsvBuilder.create_csv_file('agents', AGENT_HEADERS) do |csv|
       agents.each { |a| csv << CsvBuilder.build_agent_row(a) }
+    end
+    CsvBuilder.create_csv_file('stats', CONSUMER_STATS_HEADERS) do |csv|
+      consumers.each { |c| csv << [c.phone_number, c.callback_attempts] }
+      csv << [nil, nil] # Add a blank line after the data
+    end
+    CSV.open(
+      './ruby/output/stats.csv',
+      'ab',
+      write_headers: true,
+      headers: AGENT_STATS_HEADERS
+    ) do |csv|
+      agents.each do |a|
+        csv << [
+          a.agent_id,
+          a.utilization_counts[:calls_accepted],
+          a.utilization_counts[:vms_received]
+        ]
+      end
     end
   end
 end
