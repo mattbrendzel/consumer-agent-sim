@@ -7,9 +7,12 @@ $LOAD_PATH.unshift('ruby')
 require 'agent'
 require 'consumer'
 require 'call_router'
+require 'export_csv'
 
 # Simulator : Manages the simulation at the top level
 class Simulator
+  include ExportCsv
+
   attr_reader :consumers, :agents, :call_router
 
   def initialize
@@ -41,6 +44,12 @@ class Simulator
   def update_satisfied_count
     @satisfied_consumer_count += 1
     stop if @satisfied_consumer_count == @consumers.length
+  end
+
+  # Generalized export method, to allow for multiple possible export types
+  def export
+    export_csv_files
+    puts "Exported files to ruby/output"
   end
 end
 
