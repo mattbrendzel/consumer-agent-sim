@@ -45,7 +45,7 @@ class Consumer < Person
 
   def wait_and_retry
     # "Put random sleeps between calls" (up to 30 s now, up to 30 ms later)
-    sleep(rand(30))
+    sleep(rand(0.00..0.03)) # Sleep up to 30 milliseconds
     # Become free in order to start making a new call
     become_free
   end
