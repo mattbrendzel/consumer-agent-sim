@@ -18,7 +18,7 @@ class Consumer < Person
     @num_kids = rand(6)
     @num_cars = rand(4)
     @residency_type = %w[renter owner].sample
-    @income_in_thousands = rand(20..200)
+    @income = rand(20..200)
     @satisfied = false
     @phone_number = "+1#{@unique_id.to_s.rjust(10, '0')}"
     @simulator = simulator_instance
