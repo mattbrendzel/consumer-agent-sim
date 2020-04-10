@@ -9,20 +9,24 @@ require 'consumer'
 require 'call_router'
 require 'export_csv'
 
+NUM_AGENTS = 20
+NUM_CONSUMERS = 1000
+
 # Simulator : Manages the simulation at the top level
 class Simulator
   include ExportCsv
 
-  attr_reader :consumers, :agents, :call_router
+  attr_reader :consumers, :agents, :call_router, :start_time, :stop_time
 
   def initialize
+    # log = Logger.new("ruby/output/logfile.log", "a")
     set_start_conditions
   end
 
   def set_start_conditions
-    @agents = Array.new(20) { Agent.new }
+    @agents = Array.new(NUM_AGENTS) { Agent.new }
     @call_router = CallRouter.new(@agents)
-    @consumers = Array.new(1000) { Consumer.new(self) }
+    @consumers = Array.new(NUM_CONSUMERS) { Consumer.new(self) }
     @satisfied_consumer_count = 0
   end
 
@@ -37,13 +41,12 @@ class Simulator
     @consumers.each(&:stop)
     @agents.each(&:stop)
     @stop_time = Time.now
-    sleep(5)
-    puts 'Simulation stopped'
   end
 
   def update_satisfied_count
     @satisfied_consumer_count += 1
     stop if @satisfied_consumer_count == @consumers.length
+    puts "#{@satisfied_consumer_count}/#{NUM_CONSUMERS} consumers satisfied"
   end
 
   # Generalized export method, to allow for multiple possible export types
@@ -54,4 +57,11 @@ class Simulator
 end
 
 sim = Simulator.new
-binding.pry
+sim.start
+
+until sim.stop_time; end
+sleep(5)
+puts "Simulation stopped : Ran for #{
+  (sim.stop_time - sim.start_time).truncate(3)
+} seconds"
+sim.export
